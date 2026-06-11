@@ -405,6 +405,123 @@
             margin-bottom: 10px;
             border-radius: var(--radius);
         }
+
+        /* OUTLOOK-KALENDER STYLING */
+        .calendar-header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        .calendar-grid-header {
+            font-weight: 700;
+            color: var(--primary);
+            padding: 10px 0;
+            background-color: var(--bg-main);
+            border-radius: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .calendar-day {
+            background: #fff;
+            border: 1px solid var(--border);
+            min-height: 85px;
+            border-radius: 6px;
+            padding: 5px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .calendar-day:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+        .calendar-day.today {
+            border: 2px solid var(--primary-light);
+            background: #f0fdf4;
+        }
+        .calendar-day.other-month {
+            background: #f3f4f6;
+            color: #9ca3af;
+            opacity: 0.6;
+        }
+        .calendar-day-num {
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .calendar-day-dots {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .calendar-icon-indicator {
+            font-size: 14px;
+            line-height: 1;
+            display: inline-block;
+        }
+
+        /* OUTLOOK MODAL POPUP WINDOW STYLING */
+        .calendar-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .calendar-modal-overlay.active {
+            display: flex;
+        }
+        .calendar-modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            width: 450px;
+            max-width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border);
+            animation: fadeInModal 0.2s ease-out;
+        }
+        @keyframes fadeInModal {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .modal-header h3 {
+            color: var(--primary);
+            font-size: 16px;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        .modal-close-btn:hover {
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -415,6 +532,7 @@
             <span class="brand">Fit-for-Drive <span>★</span></span>
             <ul class="nav-menu">
                 <li class="nav-item active" onclick="switchView('dashboard')">📊 Dashboard</li>
+                <li class="nav-item" onclick="switchView('calendarview')">📅 Outlook-Kalender</li>
                 <li class="nav-item" onclick="switchView('fuhrpark')">🚗 Fuhrpark-Verwaltung</li>
                 <li class="nav-item" onclick="switchView('werkstatt')">🔧 Werkstatt-Planer</li>
                 <li class="nav-item" onclick="switchView('todolist')">✅ Aufgaben & Termine</li>
@@ -485,6 +603,62 @@
                         <div class="card-title">📌 Dringende To-Dos</div>
                         <div id="dashboardTodos" style="max-height: 350px; overflow-y: auto;"></div>
                     </div>
+                </div>
+            </div>
+
+            <div id="view-calendarview" class="view-section">
+                <h1>📅 Outlook-Kalender</h1>
+                <p class="subtitle">Klicke auf einen beliebigen Tag im Kalendergitter, um direkt ein Eintragungsfenster zu öffnen</p>
+
+                <div class="card">
+                    <div class="calendar-header-nav">
+                        <h3 id="calendarMonthTitle" style="color: var(--primary);">Monat Jahr</h3>
+                        <div>
+                            <input type="text" id="calendarLocalSearch" class="form-control" placeholder="Termine filtern..." style="width:200px; display:inline-block; margin-right:10px; padding:6px;" oninput="renderOutlookCalendar()">
+                            <button class="btn btn-outline" style="padding:6px 12px;" onclick="changeMonth(-1)">&lt;</button>
+                            <button class="btn btn-outline" style="padding:6px 12px;" onclick="changeMonth(1)">&gt;</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid">
+                        <div class="calendar-grid-header">Mo</div>
+                        <div class="calendar-grid-header">Di</div>
+                        <div class="calendar-grid-header">Mi</div>
+                        <div class="calendar-grid-header">Do</div>
+                        <div class="calendar-grid-header">Fr</div>
+                        <div class="calendar-grid-header">Sa</div>
+                        <div class="calendar-grid-header">So</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDaysGrid" style="margin-top:5px;"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📋 Termine & To-Dos im laufenden Monat</div>
+                    <div id="calendarMonthListContainer" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <div id="calendarModal" class="calendar-modal-overlay" onclick="if(event.target == this) closeCalendarModal()">
+                <div class="calendar-modal-content">
+                    <div class="modal-header">
+                        <h3 id="calTodoFormTitle">📌 Neuer Kalendereintrag</h3>
+                        <button class="modal-close-btn" onclick="closeCalendarModal()">&times;</button>
+                    </div>
+                    <form id="calTodoForm" onsubmit="saveCalTodo(event)">
+                        <input type="hidden" id="calTodoId">
+                        <div class="form-group">
+                            <label>Aufgabe / Beschreibung / Termin</label>
+                            <input type="text" id="calTodoTask" class="form-control" placeholder="z.B. TÜV-Termin vorbereiten" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fälligkeitsdatum</label>
+                            <input type="date" id="calTodoDate" class="form-control" required>
+                        </div>
+                        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px;">
+                            <button type="button" class="btn btn-outline" onclick="closeCalendarModal()">Abbrechen</button>
+                            <button type="submit" class="btn btn-accent" id="calTodoSubmitBtn">Speichern</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -660,6 +834,9 @@
         ]
     };
 
+    // Globale Kalender-Statusvariable
+    let currentCalendarDate = new Date();
+
     if (localStorage.getItem('fitForDriveData')) {
         try {
             appData = JSON.parse(localStorage.getItem('fitForDriveData'));
@@ -668,7 +845,7 @@
         }
     }
 
-    // UHRZEIT-LOGIK (Echtzeituhr oben links)
+    // UHRZEIT-LOGIK
     function updateClock() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
@@ -679,13 +856,16 @@
     setInterval(updateClock, 1000);
     updateClock(); 
 
-    // STANDARDDATUMN-VORSELEKTION FÜR FORMULARE
+    // STANDARDDATUMS-LOGIK
     function setTodayAsDefault() {
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('wsDate').value = todayStr;
         document.getElementById('todoDate').value = todayStr;
         document.getElementById('vPurchase').value = todayStr;
         document.getElementById('vLeaseReturn').value = todayStr;
+        if (document.getElementById('calTodoDate')) {
+            document.getElementById('calTodoDate').value = todayStr;
+        }
     }
 
     function saveData() {
@@ -708,9 +888,10 @@
         
         const navItems = document.querySelectorAll('.nav-item');
         if (viewId === 'dashboard') navItems[0].classList.add('active');
-        if (viewId === 'fuhrpark') navItems[1].classList.add('active');
-        if (viewId === 'werkstatt') navItems[2].classList.add('active');
-        if (viewId === 'todolist') navItems[3].classList.add('active');
+        if (viewId === 'calendarview') navItems[1].classList.add('active');
+        if (viewId === 'fuhrpark') navItems[2].classList.add('active');
+        if (viewId === 'werkstatt') navItems[3].classList.add('active');
+        if (viewId === 'todolist') navItems[4].classList.add('active');
 
         closeSearch();
     }
@@ -721,7 +902,7 @@
         const id = document.getElementById('vehicleId').value;
         const type = document.getElementById('vType').value;
         const model = document.getElementById('vModel').value;
-        const plate = document.getElementById('vPlate').value.toUpperCase(); // Direkt in Großbuchstaben wandeln
+        const plate = document.getElementById('vPlate').value.toUpperCase();
         const purchase = document.getElementById('vPurchase').value;
         const leaseReturn = document.getElementById('vLeaseReturn').value;
 
@@ -859,12 +1040,19 @@
         document.getElementById('todoTask').value = t.task;
         document.getElementById('todoDate').value = t.date;
 
+        document.getElementById('calTodoId').value = t.id;
+        document.getElementById('calTodoTask').value = t.task;
+        document.getElementById('calTodoDate').value = t.date;
+
         document.getElementById('todoFormTitle').innerText = '✏️ Aufgabe ändern';
         document.getElementById('todoSubmitBtn').innerText = 'Änderung speichern';
+        
+        document.getElementById('calTodoFormTitle').innerText = '✏️ Kalendereintrag bearbeiten';
+        document.getElementById('calTodoSubmitBtn').innerText = 'Änderung speichern';
     }
 
     function deleteTodo(id) {
-        if (confirm('Aufgabe dauerhaft löschen?')) {
+        if (confirm('Eintrag dauerhaft löschen?')) {
             appData.todos = appData.todos.filter(t => t.id !== id);
             saveData();
         }
@@ -876,6 +1064,198 @@
         document.getElementById('todoFormTitle').innerText = '📌 Neue Aufgabe';
         document.getElementById('todoSubmitBtn').innerText = 'Hinzufügen';
         setTodayAsDefault();
+    }
+
+
+    // INTERACTIVE OUTLOOK POPUP WINDOW MECHANICS
+    function openCalendarModal(dateString, todoId = '') {
+        resetCalTodoForm();
+        
+        if (todoId) {
+            editTodo(todoId);
+        } else {
+            document.getElementById('calTodoDate').value = dateString;
+            document.getElementById('calTodoFormTitle').innerText = `📌 Eintrag für ${formatDate(dateString)}`;
+        }
+
+        document.getElementById('calendarModal').classList.add('active');
+        document.getElementById('calTodoTask').focus();
+    }
+
+    function closeCalendarModal() {
+        document.getElementById('calendarModal').classList.remove('active');
+        resetCalTodoForm();
+    }
+
+    function changeMonth(direction) {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+        renderOutlookCalendar();
+    }
+
+    function saveCalTodo(e) {
+        e.preventDefault();
+        const id = document.getElementById('calTodoId').value;
+        const task = document.getElementById('calTodoTask').value;
+        const date = document.getElementById('calTodoDate').value;
+
+        if (id) {
+            const index = appData.todos.findIndex(t => t.id === id);
+            if (index !== -1) {
+                appData.todos[index].task = task;
+                appData.todos[index].date = date;
+            }
+        } else {
+            const newId = 't_' + Date.now();
+            appData.todos.push({ id: newId, task, date, completed: false });
+        }
+
+        saveData();
+        closeCalendarModal();
+    }
+
+    function resetCalTodoForm() {
+        document.getElementById('calTodoId').value = '';
+        document.getElementById('calTodoForm').reset();
+        document.getElementById('calTodoFormTitle').innerText = '📌 Neuer Kalendereintrag';
+        document.getElementById('calTodoSubmitBtn').innerText = 'Speichern';
+        setTodayAsDefault();
+    }
+
+    function renderOutlookCalendar() {
+        const gridContainer = document.getElementById('calendarDaysGrid');
+        const monthTitle = document.getElementById('calendarMonthTitle');
+        const listContainer = document.getElementById('calendarMonthListContainer');
+        const searchFilter = document.getElementById('calendarLocalSearch').value.toLowerCase().trim();
+        
+        if (!gridContainer) return;
+
+        gridContainer.innerHTML = '';
+        listContainer.innerHTML = '';
+
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+
+        const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+        monthTitle.innerText = `${monthNames[month]} ${year}`;
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        let startOffset = firstDayOfMonth.getDay() - 1; 
+        if (startOffset === -1) startOffset = 6; 
+
+        const totalDays = new Date(year, month + 1, 0).getDate();
+        const prevMonthTotalDays = new Date(year, month, 0).getDate();
+
+        let allEvents = [];
+        appData.vehicles.forEach(v => {
+            if (v.leaseReturn) {
+                // Das spezifische Symbol je nach Fahrzeugtyp bestimmen
+                let symbol = '🚗';
+                if (v.type === 'Motorrad') symbol = '🏍️';
+                if (v.type === 'Anhänger') symbol = '📦';
+                
+                allEvents.push({ id: v.id, date: v.leaseReturn, title: `Leasing-Rückgabe: ${v.model} (${v.plate})`, type: 'leasing', category: 'vehicle', icon: symbol });
+            }
+        });
+        appData.workshop.forEach(w => {
+            if (w.date && w.status !== 'Abgeschlossen') {
+                const v = appData.vehicles.find(item => item.id === w.vehicleId);
+                allEvents.push({ id: w.id, date: w.date, title: `Werkstatt (${w.status}): ${v ? v.model : 'Fahrzeug'} - ${w.reason}`, type: 'repair', category: 'workshop', icon: '🔧' });
+            }
+        });
+        appData.todos.forEach(t => {
+            if (t.date) {
+                allEvents.push({ id: t.id, date: t.date, title: t.task, type: 'todo', category: 'todo', completed: t.completed, icon: '🖊️' });
+            }
+        });
+
+        // 1. Tage des Vormonats
+        for (let i = startOffset; i > 0; i--) {
+            const dayNum = prevMonthTotalDays - i + 1;
+            const dummyDiv = document.createElement('div');
+            dummyDiv.className = 'calendar-day other-month';
+            dummyDiv.innerHTML = `<span class="calendar-day-num">${dayNum}</span>`;
+            gridContainer.appendChild(dummyDiv);
+        }
+
+        // 2. Eigentliche Monatstage
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        for (let day = 1; day <= totalDays; day++) {
+            const currentLoopDate = new Date(year, month, day);
+            const dateStr = currentLoopDate.toISOString().split('T')[0];
+
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            if (dateStr === todayStr) dayDiv.classList.add('today');
+            dayDiv.setAttribute('onclick', `openCalendarModal('${dateStr}')`);
+
+            let dotsHtml = '<div class="calendar-day-dots">';
+            const dayEvents = allEvents.filter(e => e.date === dateStr);
+            
+            dayEvents.forEach(e => {
+                dotsHtml += `<span class="calendar-icon-indicator" title="${e.title}">${e.icon}</span>`;
+            });
+            dotsHtml += '</div>';
+
+            dayDiv.innerHTML = `<span class="calendar-day-num">${day}</span>${dotsHtml}`;
+            gridContainer.appendChild(dayDiv);
+        }
+
+        // 3. Nachfolgende Tage des nächsten Monats
+        const totalRenderedCells = startOffset + totalDays;
+        const remainingCells = 42 - totalRenderedCells;
+        for (let i = 1; i <= remainingCells; i++) {
+            const dummyDiv = document.createElement('div');
+            dummyDiv.className = 'calendar-day other-month';
+            dummyDiv.innerHTML = `<span class="calendar-day-num">${i}</span>`;
+            gridContainer.appendChild(dummyDiv);
+        }
+
+        // 4. Chronologische Liste für den laufenden Monat unten generieren
+        const monthlyEventsFromRaw = allEvents.filter(e => {
+            const eDate = new Date(e.date);
+            return eDate.getFullYear() === year && eDate.getMonth() === month;
+        });
+
+        let finalMonthList = [...monthlyEventsFromRaw];
+        finalMonthList.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        if (searchFilter) {
+            finalMonthList = finalMonthList.filter(e => e.title.toLowerCase().includes(searchFilter));
+        }
+
+        if (finalMonthList.length === 0) {
+            listContainer.innerHTML = '<p style="font-style:italic; padding:10px; color: var(--text-light);">Keine Termine oder Aufgaben für diesen Monat vorhanden bzw. gefunden.</p>';
+            return;
+        }
+
+        finalMonthList.forEach(e => {
+            let typeLabel = '📅 TERMIN';
+            if (e.type === 'leasing') typeLabel = '⚠️ LEASING';
+            if (e.type === 'repair') typeLabel = '🔧 WERKSTATT';
+            if (e.type === 'todo') typeLabel = e.completed ? '✅ ERLEDIGT' : '📌 TO-DO';
+
+            let actionButtons = '';
+            if (e.category === 'todo') {
+                actionButtons = `
+                    <div style="float:right;">
+                        <button class="action-btn edit" onclick="event.stopPropagation(); openCalendarModal('${e.date}', '${e.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="event.stopPropagation(); deleteTodo('${e.id}')">❌</button>
+                    </div>`;
+            } else if (e.category === 'vehicle') {
+                actionButtons = `<button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="event.stopPropagation(); switchView('fuhrpark'); editVehicle('${e.id}')">Bearbeiten</button>`;
+            } else if (e.category === 'workshop') {
+                actionButtons = `<button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="event.stopPropagation(); switchView('werkstatt'); editWorkshop('${e.id}')">Bearbeiten</button>`;
+            }
+
+            listContainer.innerHTML += `
+                <div class="calendar-item ${e.type}" onclick="event.stopPropagation(); if('${e.category}' === 'todo') openCalendarModal('${e.date}', '${e.id}')">
+                    ${actionButtons}
+                    <strong>${formatDate(e.date)}</strong> - <small>${typeLabel}</small><br>
+                    <span>${e.icon} ${e.title}</span>
+                    <div style="clear:both;"></div>
+                </div>`;
+        });
     }
 
     // GLOBALE LIVE-SUCHE
@@ -943,7 +1323,7 @@
         document.getElementById('searchResultsSection').style.display = 'none';
     }
 
-    // DATA MANAGEMENT WITH SECURITY CHECK
+    // BACKUP MANAGEMENT
     function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
         const downloadAnchor = document.createElement('a');
@@ -958,9 +1338,8 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        // Sicherheitsabfrage vor dem Überschreiben der aktuellen Daten
-        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten im Browser unwiderruflach. Fortfahren?")) {
-            event.target.value = ''; // Input zurücksetzen
+        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten im Browser unwiderruflich. Fortfahren?")) {
+            event.target.value = '';
             return;
         }
 
@@ -982,7 +1361,7 @@
         reader.readAsText(file);
     }
 
-    // RENDER LOGIK
+    // GENERAL RENDER RUNNER
     function renderAll() {
         renderStats();
         renderVehicleTable();
@@ -990,6 +1369,7 @@
         renderTodoLists();
         renderChronologicalCalendar();
         populateVehicleDropdowns();
+        renderOutlookCalendar();
     }
 
     function renderStats() {
@@ -1002,7 +1382,6 @@
             if (v.leaseReturn) {
                 const returnDate = new Date(v.leaseReturn);
                 const diffDays = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
-                // Optimierte Leasing-Logik: Zählt auch bereits abgelaufene Verträge (<= 90 Tage) mit
                 if (diffDays <= 90) alertCount++;
             }
         });
@@ -1081,6 +1460,8 @@
     function renderTodoLists() {
         const container = document.getElementById('todoListContainer');
         const dashContainer = document.getElementById('dashboardTodos');
+        if(!container || !dashContainer) return;
+        
         container.innerHTML = '';
         dashContainer.innerHTML = '';
 
@@ -1126,6 +1507,7 @@
 
     function renderChronologicalCalendar() {
         const calContainer = document.getElementById('dashboardCalendar');
+        if(!calContainer) return;
         calContainer.innerHTML = '';
         let events = [];
 
@@ -1168,7 +1550,7 @@
         });
     }
 
-    // INITIALISIERUNG BEIM START
+    // INIT
     document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     setTodayAsDefault();
     renderAll();
