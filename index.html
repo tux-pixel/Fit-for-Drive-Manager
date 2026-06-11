@@ -501,7 +501,6 @@
                                 <label>Typ</label>
                                 <select id="vType" class="form-control" required>
                                     <option value="PKW">🚗 PKW</option>
-                                    <option value="PKW">🚗 Bus</option>
                                     <option value="Motorrad">🏍️ Motorrad</option>
                                     <option value="Anhänger">📦 Anhänger</option>
                                 </select>
@@ -641,8 +640,26 @@
     </div>
 </div>
 
-<script>
-    // DATENSTRUKTUR
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // TODO: Ersetze diese Konfiguration mit deinen echten Firebase-Projektdaten
+    const firebaseConfig = {
+        apiKey: "AIzaSyA-980LVQbqMWQ5LQb__B9OuXRzRP2HwG0",
+        authDomain: "fit-for-drive-fahrzeuge.firebaseapp.com",
+        projectId: "fit-for-drive-fahrzeuge",
+        storageBucket: "fit-for-drive-fahrzeuge.firebasestorage.app",
+        messagingSenderId: "709032120883",
+        appId: "1:709032120883:web:5c32220e124254523f0946",
+        measurementId: "G-DRN10B3V3Q"
+    };
+
+    // Firebase initialisieren
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // DATENSTRUKTUR (Standard/Fallback)
     let appData = {
         vehicles: [
             { id: 'v1', type: 'PKW', model: 'VW Golf 8 (Schalter)', plate: 'KL-FD 101', purchase: '2025-01-15', leaseReturn: '2028-01-15' },
@@ -661,13 +678,17 @@
         ]
     };
 
-    if (localStorage.getItem('fitForDriveData')) {
-        try {
-            appData = JSON.parse(localStorage.getItem('fitForDriveData'));
-        } catch(e) {
-            console.error("Fehler beim Laden der lokalen Daten", e);
+    // Echtzeit-Synchronisation mit Firebase (Ersetzt die alte lokale localStorage-Ladung)
+    onValue(ref(db, 'fitForDrive'), (snapshot) => {
+        const cloudData = snapshot.val();
+        if (cloudData) {
+            appData = cloudData;
+        } else {
+            // Falls Firebase noch komplett leer ist, initialen Datensatz hochladen
+            set(ref(db, 'fitForDrive'), appData);
         }
-    }
+        renderAll();
+    });
 
     // UHRZEIT-LOGIK (Echtzeituhr oben links)
     function updateClock() {
@@ -683,13 +704,18 @@
     // STANDARDDATUMN-VORSELEKTION FÜR FORMULARE
     function setTodayAsDefault() {
         const todayStr = new Date().toISOString().split('T')[0];
-        document.getElementById('wsDate').value = todayStr;
-        document.getElementById('todoDate').value = todayStr;
-        document.getElementById('vPurchase').value = todayStr;
-        document.getElementById('vLeaseReturn').value = todayStr;
+        if(document.getElementById('wsDate')) document.getElementById('wsDate').value = todayStr;
+        if(document.getElementById('todoDate')) document.getElementById('todoDate').value = todayStr;
+        if(document.getElementById('vPurchase')) document.getElementById('vPurchase').value = todayStr;
+        if(document.getElementById('vLeaseReturn')) document.getElementById('vLeaseReturn').value = todayStr;
     }
 
+    // Geänderte saveData-Logik schreibt nun direkt live in Firebase Cloud
     function saveData() {
+        set(ref(db, 'fitForDrive'), appData)
+            .then(() => console.log("Daten erfolgreich mit Firebase synchronisiert."))
+            .catch((err) => console.error("Firebase Synchronisationsfehler:", err));
+        
         localStorage.setItem('fitForDriveData', JSON.stringify(appData));
         renderAll();
     }
@@ -722,7 +748,7 @@
         const id = document.getElementById('vehicleId').value;
         const type = document.getElementById('vType').value;
         const model = document.getElementById('vModel').value;
-        const plate = document.getElementById('vPlate').value.toUpperCase(); // Direkt in Großbuchstaben wandeln
+        const plate = document.getElementById('vPlate').value.toUpperCase(); 
         const purchase = document.getElementById('vPurchase').value;
         const leaseReturn = document.getElementById('vLeaseReturn').value;
 
@@ -752,7 +778,7 @@
         document.getElementById('vLeaseReturn').value = v.leaseReturn;
 
         document.getElementById('vehicleFormTitle').innerText = '✏️ Fahrzeug ändern';
-        document.getElementById('vSubmitBtn').innerText = 'Änderung speichern';
+        document.getElementById('vSubmitBtn').innerText = 'Änderung保存';
     }
 
     function deleteVehicle(id) {
@@ -902,7 +928,7 @@
                     <div class="search-highlight">
                         <strong>🚗 Fuhrpark:</strong> ${v.type} - ${v.model} (${v.plate}) | 
                         Leasing-Ende: ${formatDate(v.leaseReturn)}
-                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="switchView('fuhrpark'); editVehicle('${v.id}')">Bearbeiten</button>
+                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="window.switchView('fuhrpark'); window.editVehicle('${v.id}')">Bearbeiten</button>
                         <div style="clear:both"></div>
                     </div>`;
             }
@@ -916,7 +942,7 @@
                 container.innerHTML += `
                     <div class="search-highlight" style="border-color: var(--danger)">
                         <strong>🔧 Werkstatt:</strong> ${vName} | Grund: ${w.reason} | Status: <em>${w.status}</em>
-                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="switchView('werkstatt'); editWorkshop('${w.id}')">Bearbeiten</button>
+                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="window.switchView('werkstatt'); window.editWorkshop('${w.id}')">Bearbeiten</button>
                         <div style="clear:both"></div>
                     </div>`;
             }
@@ -928,7 +954,7 @@
                 container.innerHTML += `
                     <div class="search-highlight" style="border-color: var(--accent)">
                         <strong>✅ To-Do:</strong> ${t.task} ${t.date ? '| Fällig: ' + formatDate(t.date) : ''}
-                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="switchView('todolist'); editTodo('${t.id}')">Bearbeiten</button>
+                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="window.switchView('todolist'); window.editTodo('${t.id}')">Bearbeiten</button>
                         <div style="clear:both"></div>
                     </div>`;
             }
@@ -959,9 +985,8 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        // Sicherheitsabfrage vor dem Überschreiben der aktuellen Daten
-        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten im Browser unwiderruflach. Fortfahren?")) {
-            event.target.value = ''; // Input zurücksetzen
+        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten in der Cloud unwiderruflich. Fortfahren?")) {
+            event.target.value = ''; 
             return;
         }
 
@@ -972,7 +997,7 @@
                 if (imported.vehicles && imported.workshop && imported.todos) {
                     appData = imported;
                     saveData();
-                    alert("Backup erfolgreich geladen!");
+                    alert("Backup erfolgreich in die Cloud geladen!");
                 } else {
                     alert("Ungültiges Dateiformat.");
                 }
@@ -1003,7 +1028,6 @@
             if (v.leaseReturn) {
                 const returnDate = new Date(v.leaseReturn);
                 const diffDays = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
-                // Optimierte Leasing-Logik: Zählt auch bereits abgelaufene Verträge (<= 90 Tage) mit
                 if (diffDays <= 90) alertCount++;
             }
         });
@@ -1032,8 +1056,8 @@
                     <td>${formatDate(v.purchase)}</td>
                     <td>${formatDate(v.leaseReturn)}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editVehicle('${v.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="deleteVehicle('${v.id}')">❌</button>
+                        <button class="action-btn edit" onclick="window.editVehicle('${v.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="window.deleteVehicle('${v.id}')">❌</button>
                     </td>
                 </tr>`;
         });
@@ -1072,8 +1096,8 @@
                     <td style="font-size:13px;">${w.reason}</td>
                     <td>${statusBadge}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editWorkshop('${w.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="deleteWorkshop('${w.id}')">❌</button>
+                        <button class="action-btn edit" onclick="window.editWorkshop('${w.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="window.deleteWorkshop('${w.id}')">❌</button>
                     </td>
                 </tr>`;
         });
@@ -1082,6 +1106,7 @@
     function renderTodoLists() {
         const container = document.getElementById('todoListContainer');
         const dashContainer = document.getElementById('dashboardTodos');
+        if(!container || !dashContainer) return;
         container.innerHTML = '';
         dashContainer.innerHTML = '';
 
@@ -1099,13 +1124,13 @@
             container.innerHTML += `
                 <div class="todo-item ${isCompletedClass}">
                     <div style="float:left;">
-                        <input type="checkbox" class="todo-checkbox" ${isChecked} onclick="toggleTodo('${t.id}')">
+                        <input type="checkbox" class="todo-checkbox" ${isChecked} onclick="window.toggleTodo('${t.id}')">
                         <span class="todo-text">${t.task}</span>
                         ${dateBadge}
                     </div>
                     <div style="float:right;">
-                        <button class="action-btn edit" onclick="editTodo('${t.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="deleteTodo('${t.id}')">❌</button>
+                        <button class="action-btn edit" onclick="window.editTodo('${t.id}')">✏️</button>
+                        <button class="action-btn delete" onclick="window.deleteTodo('${t.id}')">❌</button>
                     </div>
                     <div style="clear:both;"></div>
                 </div>`;
@@ -1113,7 +1138,7 @@
             if (!t.completed) {
                 dashContainer.innerHTML += `
                     <div class="todo-item">
-                        <input type="checkbox" class="todo-checkbox" onclick="toggleTodo('${t.id}')">
+                        <input type="checkbox" class="todo-checkbox" onclick="window.toggleTodo('${t.id}')">
                         <span class="todo-text" style="font-weight:600;">${t.task}</span>
                         ${t.date ? '<br><small style="color:var(--warning); margin-left:25px;">📅 Fällig: ' + formatDate(t.date) + '</small>' : ''}
                     </div>`;
@@ -1127,6 +1152,7 @@
 
     function renderChronologicalCalendar() {
         const calContainer = document.getElementById('dashboardCalendar');
+        if(!calContainer) return;
         calContainer.innerHTML = '';
         let events = [];
 
@@ -1172,7 +1198,26 @@
     // INITIALISIERUNG BEIM START
     document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     setTodayAsDefault();
-    renderAll();
+
+    // FUNKTIONEN AN DAS WINDOW-OBJEKT BINDEN (Damit das HTML sie im Modul-Scope ausführen kann)
+    window.switchView = switchView;
+    window.saveVehicle = saveVehicle;
+    window.editVehicle = editVehicle;
+    window.deleteVehicle = deleteVehicle;
+    window.resetVehicleForm = resetVehicleForm;
+    window.saveWorkshop = saveWorkshop;
+    window.editWorkshop = editWorkshop;
+    window.deleteWorkshop = deleteWorkshop;
+    window.resetWorkshopForm = resetWorkshopForm;
+    window.saveTodo = saveTodo;
+    window.toggleTodo = toggleTodo;
+    window.editTodo = editTodo;
+    window.deleteTodo = deleteTodo;
+    window.resetTodoForm = resetTodoForm;
+    window.handleGlobalSearch = handleGlobalSearch;
+    window.closeSearch = closeSearch;
+    window.exportData = exportData;
+    window.importData = importData;
 </script>
 
 </body>
