@@ -6,9 +6,6 @@
     <title>Fit-for-Drive | Fuhrpark & Büro-Manager</title>
     
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <style>
         :root {
@@ -914,66 +911,32 @@
 </div>
 
 <script>
-    // ----------------------------------------------------
-    // BITTE HIER DEINE FIREBASE CONFIGURATION EINTRAGEN!
-    // ----------------------------------------------------
-    const firebaseConfig = {
-        apiKey: ""AIzaSyB7c0txm23bNO1MYNypObyAC3I-_1gai9w"",
-        authDomain: "fit-for-drive-manager.firebaseapp.com",
-        projectId: "fit-for-drive-manager",
-        storageBucket: "fit-for-drive-manager.firebasestorage.app",
-        messagingSenderId: "415753526942",
-        appId: "1:415753526942:web:73c31ef79c3a95875b658f"
-		measurementId: "G-89VT5SS7PG"
+    let appData = {
+        vehicles: [
+            { id: 'v1', type: 'PKW', model: 'VW Golf 8 (Schalter)', plate: 'KL-FD 101', driver: 'Peter Müller', mileage: 28400, tuev: '2026-07-10', purchase: '2025-01-15', leaseReturn: '2028-01-15' },
+            { id: 'v2', type: 'PKW', model: 'Audi Q3 (Automatik)', plate: 'KL-FD 102', driver: 'Sabine Schmitz', mileage: 14200, tuev: '2027-05-20', purchase: '2025-03-20', leaseReturn: '2026-09-20' },
+            { id: 'v3', type: 'Motorrad', model: 'BMW F 750 GS', plate: 'KL-FD 90', driver: 'Klaus Koch', mileage: 8900, tuev: '2026-06-30', purchase: '2024-05-10', leaseReturn: '2027-05-10' },
+            { id: 'v4', type: 'Anhänger', model: 'Humbaur Tandem', plate: 'KL-FD 500', driver: 'Poolfahrzeug', mileage: 4500, tuev: '2028-08-01', purchase: '2023-08-01', leaseReturn: '2028-08-01' }
+        ],
+        workshop: [
+            { id: 'w1', vehicleId: 'v1', date: '2026-06-10', reason: 'Reguläre 30.000km Inspektion & Ölwechsel', status: 'Geplant' },
+            { id: 'w2', vehicleId: 'v2', date: '2026-06-02', reason: 'Kupplung rutscht - Überprüfung', status: 'In Werkstatt' }
+        ],
+        todos: [
+            { id: 't1', task: 'Reifenwechsel für Motorrad KL-FD 90 organisieren', date: '2026-06-05', completed: false },
+            { id: 't2', task: 'Leasing-Verlängerung für Audi Q3 prüfen', date: '2026-07-01', completed: false },
+            { id: 't3', task: 'Kaffeepads fürs Büro nachbestellen', date: '', completed: true }
+        ]
     };
 
-    // Firebase initialisieren
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    let appData = { vehicles: [], workshop: [], todos: [] };
     let currentCalendarDate = new Date();
 
-    // DATEN ENTWEDER AUS FIREBASE ODER BEI ERSTSTART ALS MIGRATION AUS LOCALSTORAGE LADEN
-    function initAppDatabase() {
-        db.collection("appData").doc("fuhrparkConfig").onSnapshot((doc) => {
-            if (doc.exists) {
-                appData = doc.data();
-                renderAll();
-                // Wenn die Synchronisierung mit Firebase läuft, können wir den lokalen Speicher optional leeren
-                localStorage.removeItem('fitForDriveData');
-            } else {
-                // FALLBACK & MIGRATION: Gibt es noch Altdaten im localStorage?
-                if (localStorage.getItem('fitForDriveData')) {
-                    try {
-                        appData = JSON.parse(localStorage.getItem('fitForDriveData'));
-                        showToast("Alte Daten gefunden! Migriere zu Firebase...");
-                        saveData(); // Direkt in Firebase hochschieben
-                    } catch(e) {
-                        console.error(e);
-                    }
-                } else {
-                    // Wenn absolut gar keine Daten existieren, erstelle leere Strukturen
-                    appData = { vehicles: [], workshop: [], todos: [] };
-                    saveData();
-                }
-            }
-        }, (error) => {
-            console.error("Firebase Snapshot Error: ", error);
-            showToast("Fehler bei der Live-Datenverbindung.");
-        });
-    }
-
-    // ÄNDERUNGEN IN FIREBASE SPEICHERN
-    function saveData() {
-        db.collection("appData").doc("fuhrparkConfig").set(appData)
-          .then(() => {
-              // renderAll() wird automatisch durch das onSnapshot ausgelöst!
-          })
-          .catch((error) => {
-              console.error("Fehler beim Speichern in Firebase: ", error);
-              showToast("Speichern fehlgeschlagen!");
-          });
+    if (localStorage.getItem('fitForDriveData')) {
+        try {
+            appData = JSON.parse(localStorage.getItem('fitForDriveData'));
+        } catch(e) {
+            console.error("Fehler beim Laden der lokalen Daten", e);
+        }
     }
 
     // SYSTEM-BENACHRICHTIGUNGEN INITIALISIEREN
@@ -991,6 +954,7 @@
         
         const todayStr = new Date().toISOString().split('T')[0];
         
+        // 1. Fahrzeuge prüfen (Leasing / TÜV)
         appData.vehicles.forEach(v => {
             if (v.leaseReturn === todayStr) {
                 new Notification("🚨 Leasing-Rückgabe heute!", {
@@ -1006,6 +970,7 @@
             }
         });
 
+        // 2. Werkstatt prüfen
         appData.workshop.forEach(w => {
             if (w.date === todayStr && w.status !== 'Abgeschlossen') {
                 const v = appData.vehicles.find(item => item.id === w.vehicleId);
@@ -1051,6 +1016,11 @@
         }
     }
 
+    function saveData() {
+        localStorage.setItem('fitForDriveData', JSON.stringify(appData));
+        renderAll();
+    }
+
     function formatDate(dateStr) {
         if (!dateStr) return "-";
         const d = new Date(dateStr);
@@ -1074,6 +1044,7 @@
         closeSearch();
     }
 
+    // REGEX KENNZEICHEN-VALIDIERUNG & SPEICHERUNG
     function saveVehicle(e) {
         e.preventDefault();
         const id = document.getElementById('vehicleId').value;
@@ -1086,9 +1057,11 @@
         const purchase = document.getElementById('vPurchase').value;
         const leaseReturn = document.getElementById('vLeaseReturn').value;
 
+        // REGEX für deutsches Kennzeichen (z.B. "KL-FD 123", "M-A 1234" oder mit Umlauten)
         const plateRegex = /^[A-ZÖÄÜ]{1,3}-[A-ZÖÄÜ]{1,2}\s[1-9][0-9]{0,3}$/;
+        
         if (!plateRegex.test(plate)) {
-            alert("⚠️ Ungültiges Kennzeichen-Format!\nBeispiel: KL-FD 123 oder M-A 1234");
+            alert("⚠️ Ungültiges Kennzeichen-Format!\n\nBitte nutzen Sie das offizielle Format mit Bindestrich und Leerzeichen.\nBeispiel: KL-FD 123 oder M-A 1234");
             document.getElementById('vPlate').focus();
             return;
         }
@@ -1145,6 +1118,7 @@
         lucide.createIcons();
     }
 
+    // WERKSTATT LOGIK
     function saveWorkshop(e) {
         e.preventDefault();
         const id = document.getElementById('wsId').value;
@@ -1201,6 +1175,7 @@
         lucide.createIcons();
     }
 
+    // TO-DO LOGIK
     function saveTodo(e) {
         e.preventDefault();
         const id = document.getElementById('todoId').value;
@@ -1270,6 +1245,7 @@
         lucide.createIcons();
     }
 
+    // KALENDER MODAL
     function openCalendarModal(dateString, todoId = '') {
         resetCalTodoForm();
         if (todoId) {
@@ -1325,6 +1301,7 @@
         lucide.createIcons();
     }
 
+    // MONATSKALENDER RENDERN
     function renderOutlookCalendar() {
         const gridContainer = document.getElementById('calendarDaysGrid');
         const monthTitle = document.getElementById('calendarMonthTitle');
@@ -1458,6 +1435,7 @@
         lucide.createIcons();
     }
 
+    // GLOBALE LIVE-SUCHE
     function handleGlobalSearch() {
         const query = document.getElementById('globalSearch').value.toLowerCase().trim();
         const resultsSection = document.getElementById('searchResultsSection');
@@ -1521,6 +1499,7 @@
         document.getElementById('searchResultsSection').style.display = 'none';
     }
 
+    // BACKUP MANAGEMENT
     function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
         const downloadAnchor = document.createElement('a');
@@ -1536,7 +1515,7 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten in Firebase unwiderruflich. Fortfahren?")) {
+        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten im Browser unwiderruflich. Fortfahren?")) {
             event.target.value = '';
             return;
         }
@@ -1567,9 +1546,10 @@
         renderChronologicalCalendar();
         populateVehicleDropdowns();
         renderOutlookCalendar();
-        lucide.createIcons();
+        lucide.createIcons(); // Updatet alle neuen SVGs auf der Seite
     }
 
+    // STATISTIKEN
     function renderStats() {
         document.getElementById('stat-total-vehicles').innerText = appData.vehicles.length;
         document.getElementById('stat-in-workshop').innerText = appData.workshop.filter(w => w.status === 'In Werkstatt').length;
@@ -1595,6 +1575,7 @@
         document.getElementById('stat-tuev-alert').innerText = tuevCount;
     }
 
+    // TABELLE FUHRPARK RENDERN
     function renderVehicleTable() {
         const tbody = document.getElementById('vehicleTableBody');
         tbody.innerHTML = '';
@@ -1634,6 +1615,7 @@
         });
     }
 
+    // TABELLE WERKSTATT RENDERN
     function renderWorkshopTable() {
         const tbody = document.getElementById('workshopTableBody');
         tbody.innerHTML = '';
@@ -1665,6 +1647,7 @@
         });
     }
 
+    // TO-DO LISTEN RENDERN
     function renderTodoLists() {
         const container = document.getElementById('todoListContainer');
         const dashContainer = document.getElementById('dashboardTodos');
@@ -1713,6 +1696,7 @@
         }
     }
 
+    // DASHBOARD CHRONOLOGISCHER KALENDER RENDERN
     function renderChronologicalCalendar() {
         const calContainer = document.getElementById('dashboardCalendar');
         if(!calContainer) return;
@@ -1764,9 +1748,9 @@
     // ANWENDUNGSSTART
     document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     setTodayAsDefault();
-    initNotifications();  
-    initAppDatabase(); // Startet Firebase Live-Synchronisation
-    setTimeout(checkTodayDeadlines, 3000); 
+    initNotifications();  // Aktiviert System-Benachrichtigungen
+    renderAll();
+    setTimeout(checkTodayDeadlines, 2000); // Wartet kurz und checkt anstehende Termine für heute
 </script>
 
 </body>
