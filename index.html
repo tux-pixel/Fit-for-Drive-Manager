@@ -4,18 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit-for-Drive | Fuhrpark & Büro-Manager</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
-            --bg-main: #f0f5f3; /* Leicht grünlicher, cleaner Hintergrund */
+            --bg-main: #f0f5f3; 
             --bg-sidebar: #ffffff;
-            --primary: #1e3a8a; /* Kräftiges Dunkelblau */
-            --primary-light: #3b82f6; /* Harmonisches Blau */
-            --accent: #10b981; /* Frisches Smaragdgrün */
-            --accent-light: #e6f4ea; /* Sanftes Mintgrün für Highlights */
+            --primary: #1e3a8a; 
+            --primary-light: #3b82f6; 
+            --accent: #10b981; 
+            --accent-light: #e6f4ea; 
             --text-dark: #1f2937;
             --text-light: #4b5563;
             --border: #d1d5db;
-            --success: #059669; /* Tiefes Grün */
+            --success: #059669; 
             --warning: #d97706;
             --danger: #dc2626;
             --radius: 10px;
@@ -36,7 +42,6 @@
             overflow: hidden;
         }
 
-        /* Modernes Flexbox-Layout */
         .wrapper {
             display: flex;
             width: 100%;
@@ -67,20 +72,23 @@
             padding: 30px;
         }
 
-        /* Sidebar Styling */
         .brand {
             font-size: 20px;
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 30px;
-            display: block;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             border-bottom: 2px solid var(--accent-light);
             padding-bottom: 15px;
         }
         
         .brand span {
             color: var(--accent);
+            display: flex;
+            align-items: center;
         }
 
         .nav-menu {
@@ -95,7 +103,14 @@
             color: var(--text-light);
             font-weight: 600;
             transition: all 0.2s ease;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item i {
+            width: 18px;
+            height: 18px;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -103,7 +118,6 @@
             color: var(--success);
         }
 
-        /* Top Bar / Suche & Uhrzeit */
         .top-bar {
             background: white;
             padding: 15px 30px;
@@ -134,6 +148,8 @@
         .search-wrapper {
             position: relative;
             width: 350px;
+            display: flex;
+            align-items: center;
         }
 
         .search-input {
@@ -155,8 +171,10 @@
         .search-icon {
             position: absolute;
             left: 14px;
-            top: 11px;
             color: var(--text-light);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
         }
 
         .top-actions {
@@ -170,7 +188,6 @@
             display: table;
         }
 
-        /* Bereiche */
         .view-section {
             display: none;
         }
@@ -179,7 +196,6 @@
             display: block;
         }
 
-        /* Typographie */
         h1 {
             font-size: 24px;
             color: var(--primary);
@@ -192,11 +208,10 @@
             margin-bottom: 25px;
         }
 
-        /* Grids */
-        .grid-3 {
+        .grid-4 {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             margin-bottom: 30px;
         }
 
@@ -207,18 +222,35 @@
             margin-bottom: 30px;
         }
 
-        /* Dashboard Karten */
         .stat-card {
             background: white;
             padding: 20px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             border-left: 4px solid var(--primary-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-card-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card i {
+            width: 32px;
+            height: 32px;
+            color: var(--text-light);
+            opacity: 0.3;
         }
 
         .stat-card.warning { border-left-color: var(--warning); }
+        .stat-card.warning i { color: var(--warning); }
         .stat-card.danger { border-left-color: var(--danger); }
+        .stat-card.danger i { color: var(--danger); }
         .stat-card.success { border-left-color: var(--accent); }
+        .stat-card.success i { color: var(--accent); }
 
         .stat-val {
             font-size: 28px;
@@ -243,9 +275,16 @@
             margin-bottom: 15px;
             border-bottom: 1px solid var(--border);
             padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Formular Elemente */
+        .card-title i {
+            width: 18px;
+            height: 18px;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -272,12 +311,10 @@
             border-color: var(--accent);
         }
 
-        /* Kennzeichen-Autokorrektur via CSS */
         #vPlate, code {
             text-transform: uppercase;
         }
 
-        /* Buttons */
         .btn {
             padding: 10px 18px;
             border-radius: 6px;
@@ -298,7 +335,14 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dark); }
         .btn-outline:hover { background: var(--bg-main); }
 
-        /* Tabellen */
+        .btn-action {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -330,13 +374,19 @@
             background-color: #f9fafb;
         }
 
-        /* Badges */
         .badge {
             padding: 4px 8px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: 700;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge i {
+            width: 12px;
+            height: 12px;
         }
 
         .badge-car { background-color: #e0f2fe; color: #0369a1; }
@@ -345,19 +395,6 @@
         .badge-active { background-color: #d1fae5; color: #065f46; }
         .badge-workshop { background-color: #fee2e2; color: #991b1b; }
 
-        .action-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 8px;
-            color: var(--text-light);
-        }
-
-        .action-btn.edit:hover { color: var(--primary-light); }
-        .action-btn.delete:hover { color: var(--danger); }
-
-        /* To Do Liste */
         .todo-item {
             display: block;
             border-bottom: 1px solid var(--border);
@@ -383,9 +420,12 @@
             border-radius: 4px;
             margin-left: 10px;
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
         }
+        .todo-date i { width: 10px; height: 10px; }
 
-        /* Kalender Chronologie */
         .calendar-item {
             padding: 10px;
             border-left: 3px solid var(--primary-light);
@@ -406,7 +446,6 @@
             border-radius: var(--radius);
         }
 
-        /* OUTLOOK-KALENDER STYLING */
         .calendar-header-nav {
             display: flex;
             justify-content: space-between;
@@ -465,12 +504,14 @@
             margin-top: 5px;
         }
         .calendar-icon-indicator {
-            font-size: 14px;
-            line-height: 1;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+        }
+        .calendar-icon-indicator i {
+            width: 14px;
+            height: 14px;
         }
 
-        /* OUTLOOK MODAL POPUP WINDOW STYLING */
         .calendar-modal-overlay {
             display: none;
             position: fixed;
@@ -511,7 +552,11 @@
         .modal-header h3 {
             color: var(--primary);
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
+        .modal-header h3 i { width: 16px; height: 16px; }
         .modal-close-btn {
             background: none;
             border: none;
@@ -522,27 +567,52 @@
         .modal-close-btn:hover {
             color: var(--danger);
         }
+
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+        }
+        .toast {
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 4px solid var(--accent);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
+<div id="toast-container"></div>
+
 <div class="wrapper">
     <div class="sidebar-cell">
         <div>
-            <span class="brand">Fit-for-Drive <span>★</span></span>
+            <span class="brand">Fit-for-Drive <span><i data-lucide="star"></i></span></span>
             <ul class="nav-menu">
-                <li class="nav-item active" onclick="switchView('dashboard')">📊 Dashboard</li>
-                <li class="nav-item" onclick="switchView('calendarview')">📅 Outlook-Kalender</li>
-                <li class="nav-item" onclick="switchView('fuhrpark')">🚗 Fuhrpark-Verwaltung</li>
-                <li class="nav-item" onclick="switchView('werkstatt')">🔧 Werkstatt-Planer</li>
-                <li class="nav-item" onclick="switchView('todolist')">✅ Aufgaben & Termine</li>
+                <li class="nav-item active" onclick="switchView('dashboard')"><i data-lucide="layout-dashboard"></i> Dashboard</li>
+                <li class="nav-item" onclick="switchView('calendarview')"><i data-lucide="calendar"></i> Outlook-Kalender</li>
+                <li class="nav-item" onclick="switchView('fuhrpark')"><i data-lucide="car"></i> Fuhrpark-Verwaltung</li>
+                <li class="nav-item" onclick="switchView('werkstatt')"><i data-lucide="wrench"></i> Werkstatt-Planer</li>
+                <li class="nav-item" onclick="switchView('todolist')"><i data-lucide="check-square"></i> Aufgaben & Termine</li>
             </ul>
         </div>
         
         <div style="padding: 10px; background: #f8fafc; border-radius: 6px; font-size: 11px;">
             <p style="font-weight: bold; margin-bottom: 5px; color: var(--primary);">Büro-Synchronisation:</p>
-            <button class="btn btn-outline" style="width: 100%; font-size: 11px; padding: 5px;" onclick="exportData()">💾 Backup exportieren</button>
-            <button class="btn btn-outline" style="width: 100%; font-size: 11px; padding: 5px; margin-top: 5px;" onclick="document.getElementById('importFile').click()">📂 Backup importieren</button>
+            <button class="btn btn-outline" style="width: 100%; font-size: 11px; padding: 5px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="exportData()"><i data-lucide="save" style="width:12px; height:12px;"></i> Backup exportieren</button>
+            <button class="btn btn-outline" style="width: 100%; font-size: 11px; padding: 5px; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="document.getElementById('importFile').click()"><i data-lucide="folder-open" style="width:12px; height:12px;"></i> Backup importieren</button>
             <input type="file" id="importFile" style="display:none" onchange="importData(event)">
         </div>
     </div>
@@ -555,7 +625,7 @@
                     <div id="liveClockDisplay" class="live-clock">00:00:00 Uhr</div>
                     
                     <div class="search-wrapper">
-                        <span class="search-icon">🔍</span>
+                        <i data-lucide="search" class="search-icon"></i>
                         <input type="text" id="globalSearch" class="search-input" placeholder="Globale Suche..." oninput="handleGlobalSearch()">
                     </div>
                 </div>
@@ -567,7 +637,7 @@
             <div id="searchResultsSection" style="display: none; margin-bottom: 30px;">
                 <div class="card" style="border: 2px solid var(--accent);">
                     <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>🔎 Suchergebnisse</span>
+                        <span style="display:flex; align-items:center; gap:6px;"><i data-lucide="search"></i> Suchergebnisse</span>
                         <button class="btn btn-outline" style="padding:2px 8px;" onclick="closeSearch()">Schließen</button>
                     </div>
                     <div id="searchResultsContainer"></div>
@@ -578,29 +648,45 @@
                 <h1>Büro-Dashboard</h1>
                 <p class="subtitle">Schnellübersicht über die Fahrschul-Ressourcen</p>
 
-                <div class="grid-3">
+                <div class="grid-4">
                     <div class="stat-card success">
-                        <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">Gesamt-Fuhrpark</div>
-                        <div class="stat-val" id="stat-total-vehicles">0</div>
+                        <div class="stat-card-info">
+                            <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">Gesamt-Fuhrpark</div>
+                            <div class="stat-val" id="stat-total-vehicles">0</div>
+                        </div>
+                        <i data-lucide="car"></i>
                     </div>
                     <div class="stat-card warning">
-                        <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">Leasing-Ende &lt;= 90 Tage</div>
-                        <div class="stat-val" id="stat-leasing-alert">0</div>
+                        <div class="stat-card-info">
+                            <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">Leasing-Ende &lt;= 90 Tage</div>
+                            <div class="stat-val" id="stat-leasing-alert">0</div>
+                        </div>
+                        <i data-lucide="alert-triangle"></i>
                     </div>
                     <div class="stat-card danger">
-                        <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">Aktuell in Werkstatt</div>
-                        <div class="stat-val" id="stat-in-workshop">0</div>
+                        <div class="stat-card-info">
+                            <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">TÜV fällig &lt;= 30 Tage</div>
+                            <div class="stat-val" id="stat-tuev-alert">0</div>
+                        </div>
+                        <i data-lucide="shield-alert"></i>
+                    </div>
+                    <div class="stat-card danger" style="border-left-color: #8b5cf6;">
+                        <div class="stat-card-info">
+                            <div style="color: var(--text-light); font-size: 13px; font-weight: 600;">Aktuell in Werkstatt</div>
+                            <div class="stat-val" id="stat-in-workshop">0</div>
+                        </div>
+                        <i data-lucide="wrench"></i>
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div class="card">
-                        <div class="card-title">🗓️ Fristen- & Terminübersicht</div>
+                        <div class="card-title"><i data-lucide="clock"></i> Fristen- & Terminübersicht</div>
                         <div id="dashboardCalendar" style="max-height: 350px; overflow-y: auto;"></div>
                     </div>
 
                     <div class="card">
-                        <div class="card-title">📌 Dringende To-Dos</div>
+                        <div class="card-title"><i data-lucide="pin"></i> Dringende To-Dos</div>
                         <div id="dashboardTodos" style="max-height: 350px; overflow-y: auto;"></div>
                     </div>
                 </div>
@@ -633,7 +719,7 @@
                 </div>
 
                 <div class="card">
-                    <div class="card-title">📋 Termine & To-Dos im laufenden Monat</div>
+                    <div class="card-title"><i data-lucide="list"></i> Termine & To-Dos im laufenden Monat</div>
                     <div id="calendarMonthListContainer" style="max-height: 300px; overflow-y: auto;"></div>
                 </div>
             </div>
@@ -641,7 +727,7 @@
             <div id="calendarModal" class="calendar-modal-overlay" onclick="if(event.target == this) closeCalendarModal()">
                 <div class="calendar-modal-content">
                     <div class="modal-header">
-                        <h3 id="calTodoFormTitle">📌 Neuer Kalendereintrag</h3>
+                        <h3 id="calTodoFormTitle"><i data-lucide="pin"></i> Neuer Kalendereintrag</h3>
                         <button class="modal-close-btn" onclick="closeCalendarModal()">&times;</button>
                     </div>
                     <form id="calTodoForm" onsubmit="saveCalTodo(event)">
@@ -664,19 +750,19 @@
 
             <div id="view-fuhrpark" class="view-section">
                 <h1>Fuhrpark-Verwaltung</h1>
-                <p class="subtitle">Fahrzeuge anlegen, bearbeiten und Leasing überwachen</p>
+                <p class="subtitle">Fahrzeuge anlegen, bearbeiten und Leasing/TÜV überwachen</p>
 
                 <div class="grid-2" style="grid-template-columns: 1fr 2fr;">
                     <div class="card">
-                        <div class="card-title" id="vehicleFormTitle">🆕 Fahrzeug anlegen</div>
+                        <div class="card-title" id="vehicleFormTitle"><i data-lucide="plus-circle"></i> Fahrzeug anlegen</div>
                         <form id="vehicleForm" onsubmit="saveVehicle(event)">
                             <input type="hidden" id="vehicleId">
                             <div class="form-group">
                                 <label>Typ</label>
                                 <select id="vType" class="form-control" required>
-                                    <option value="PKW">🚗 PKW</option>
-                                    <option value="Motorrad">🏍️ Motorrad</option>
-                                    <option value="Anhänger">📦 Anhänger</option>
+                                    <option value="PKW">PKW</option>
+                                    <option value="Motorrad">Motorrad</option>
+                                    <option value="Anhänger">Anhänger</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -684,8 +770,20 @@
                                 <input type="text" id="vModel" class="form-control" placeholder="z.B. VW Golf 8" required>
                             </div>
                             <div class="form-group">
-                                <label>Kennzeichen</label>
+                                <label>Kennzeichen (Format: Ort-Buchstaben Zahl, z.B. KL-FD 123)</label>
                                 <input type="text" id="vPlate" class="form-control" placeholder="z.B. KL-FD 123" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Zugeordneter Fahrlehrer</label>
+                                <input type="text" id="vDriver" class="form-control" placeholder="z.B. Max Mustermann">
+                            </div>
+                            <div class="form-group">
+                                <label>Aktueller Kilometerstand (km)</label>
+                                <input type="number" id="vMileage" class="form-control" placeholder="z.B. 24500" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nächste HU (TÜV)</label>
+                                <input type="date" id="vTuev" class="form-control" required>
                             </div>
                             <div class="form-group">
                                 <label>Anschaffungsdatum</label>
@@ -703,15 +801,16 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Aktueller Fahrzeugbestand</div>
+                        <div class="card-title"><i data-lucide="layers"></i> Aktueller Fahrzeugbestand</div>
                         <div class="table-responsive">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>Typ</th>
-                                        <th>Modell</th>
+                                        <th>Modell / Fahrer</th>
                                         <th>Kennzeichen</th>
-                                        <th>Anschaffung</th>
+                                        <th>KM-Stand</th>
+                                        <th>Nächster TÜV</th>
                                         <th>Leasing-Rückgabe</th>
                                         <th>Aktionen</th>
                                     </tr>
@@ -729,7 +828,7 @@
 
                 <div class="grid-2" style="grid-template-columns: 1fr 2fr;">
                     <div class="card">
-                        <div class="card-title" id="workshopFormTitle">🛠️ Werkstatt-Termin buchen</div>
+                        <div class="card-title" id="workshopFormTitle"><i data-lucide="wrench"></i> Werkstatt-Termin buchen</div>
                         <form id="workshopForm" onsubmit="saveWorkshop(event)">
                             <input type="hidden" id="wsId">
                             <div class="form-group">
@@ -747,9 +846,9 @@
                             <div class="form-group">
                                 <label>Status</label>
                                 <select id="wsStatus" class="form-control">
-                                    <option value="Geplant">⏳ Geplant</option>
-                                    <option value="In Werkstatt">🔧 Aktuell in Werkstatt</option>
-                                    <option value="Abgeschlossen">✅ Erledigt / Zurück</option>
+                                    <option value="Geplant">Geplant</option>
+                                    <option value="In Werkstatt">Aktuell in Werkstatt</option>
+                                    <option value="Abgeschlossen">Erledigt / Zurück</option>
                                 </select>
                             </div>
                             <div style="margin-top: 20px;">
@@ -760,7 +859,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Werkstatthistorie & Planungen</div>
+                        <div class="card-title"><i data-lucide="history"></i> Werkstatthistorie & Planungen</div>
                         <div class="table-responsive">
                             <table>
                                 <thead>
@@ -785,7 +884,7 @@
 
                 <div class="grid-2" style="grid-template-columns: 1fr 2fr;">
                     <div class="card">
-                        <div class="card-title" id="todoFormTitle">📌 Neue Aufgabe</div>
+                        <div class="card-title" id="todoFormTitle"><i data-lucide="check-square"></i> Neue Aufgabe</div>
                         <form id="todoForm" onsubmit="saveTodo(event)">
                             <input type="hidden" id="todoId">
                             <div class="form-group">
@@ -804,7 +903,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Offene & Erledigte Aufgaben</div>
+                        <div class="card-title"><i data-lucide="list-todo"></i> Offene & Erledigte Aufgaben</div>
                         <div id="todoListContainer"></div>
                     </div>
                 </div>
@@ -815,37 +914,121 @@
 </div>
 
 <script>
-    // DATENSTRUKTUR
-    let appData = {
-        vehicles: [
-            { id: 'v1', type: 'PKW', model: 'VW Golf 8 (Schalter)', plate: 'KL-FD 101', purchase: '2025-01-15', leaseReturn: '2028-01-15' },
-            { id: 'v2', type: 'PKW', model: 'Audi Q3 (Automatik)', plate: 'KL-FD 102', purchase: '2025-03-20', leaseReturn: '2026-09-20' },
-            { id: 'v3', type: 'Motorrad', model: 'BMW F 750 GS', plate: 'KL-FD 90', purchase: '2024-05-10', leaseReturn: '2027-05-10' },
-            { id: 'v4', type: 'Anhänger', model: 'Humbaur Tandem', plate: 'KL-FD 500', purchase: '2023-08-01', leaseReturn: '2028-08-01' }
-        ],
-        workshop: [
-            { id: 'w1', vehicleId: 'v1', date: '2026-06-10', reason: 'Reguläre 30.000km Inspektion & Ölwechsel', status: 'Geplant' },
-            { id: 'w2', vehicleId: 'v2', date: '2026-06-02', reason: 'Kupplung rutscht - Überprüfung', status: 'In Werkstatt' }
-        ],
-        todos: [
-            { id: 't1', task: 'Reifenwechsel für Motorrad KL-FD 90 organisieren', date: '2026-06-05', completed: false },
-            { id: 't2', task: 'Leasing-Verlängerung für Audi Q3 prüfen', date: '2026-07-01', completed: false },
-            { id: 't3', task: 'Kaffeepads fürs Büro nachbestellen', date: '', completed: true }
-        ]
+    // ----------------------------------------------------
+    // BITTE HIER DEINE FIREBASE CONFIGURATION EINTRAGEN!
+    // ----------------------------------------------------
+    const firebaseConfig = {
+        apiKey: ""AIzaSyB7c0txm23bNO1MYNypObyAC3I-_1gai9w"",
+        authDomain: "fit-for-drive-manager.firebaseapp.com",
+        projectId: "fit-for-drive-manager",
+        storageBucket: "fit-for-drive-manager.firebasestorage.app",
+        messagingSenderId: "415753526942",
+        appId: "1:415753526942:web:73c31ef79c3a95875b658f"
+		measurementId: "G-89VT5SS7PG"
     };
 
-    // Globale Kalender-Statusvariable
+    // Firebase initialisieren
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let appData = { vehicles: [], workshop: [], todos: [] };
     let currentCalendarDate = new Date();
 
-    if (localStorage.getItem('fitForDriveData')) {
-        try {
-            appData = JSON.parse(localStorage.getItem('fitForDriveData'));
-        } catch(e) {
-            console.error("Fehler beim Laden der lokalen Daten", e);
+    // DATEN ENTWEDER AUS FIREBASE ODER BEI ERSTSTART ALS MIGRATION AUS LOCALSTORAGE LADEN
+    function initAppDatabase() {
+        db.collection("appData").doc("fuhrparkConfig").onSnapshot((doc) => {
+            if (doc.exists) {
+                appData = doc.data();
+                renderAll();
+                // Wenn die Synchronisierung mit Firebase läuft, können wir den lokalen Speicher optional leeren
+                localStorage.removeItem('fitForDriveData');
+            } else {
+                // FALLBACK & MIGRATION: Gibt es noch Altdaten im localStorage?
+                if (localStorage.getItem('fitForDriveData')) {
+                    try {
+                        appData = JSON.parse(localStorage.getItem('fitForDriveData'));
+                        showToast("Alte Daten gefunden! Migriere zu Firebase...");
+                        saveData(); // Direkt in Firebase hochschieben
+                    } catch(e) {
+                        console.error(e);
+                    }
+                } else {
+                    // Wenn absolut gar keine Daten existieren, erstelle leere Strukturen
+                    appData = { vehicles: [], workshop: [], todos: [] };
+                    saveData();
+                }
+            }
+        }, (error) => {
+            console.error("Firebase Snapshot Error: ", error);
+            showToast("Fehler bei der Live-Datenverbindung.");
+        });
+    }
+
+    // ÄNDERUNGEN IN FIREBASE SPEICHERN
+    function saveData() {
+        db.collection("appData").doc("fuhrparkConfig").set(appData)
+          .then(() => {
+              // renderAll() wird automatisch durch das onSnapshot ausgelöst!
+          })
+          .catch((error) => {
+              console.error("Fehler beim Speichern in Firebase: ", error);
+              showToast("Speichern fehlgeschlagen!");
+          });
+    }
+
+    // SYSTEM-BENACHRICHTIGUNGEN INITIALISIEREN
+    function initNotifications() {
+        if ("Notification" in window) {
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
         }
     }
 
-    // UHRZEIT-LOGIK
+    // HEUTIGE FRISTEN PRÜFEN & NOTIFICATION SENDEN
+    function checkTodayDeadlines() {
+        if (!("Notification" in window) || Notification.permission !== "granted") return;
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        appData.vehicles.forEach(v => {
+            if (v.leaseReturn === todayStr) {
+                new Notification("🚨 Leasing-Rückgabe heute!", {
+                    body: `Das Leasing für ${v.model} (${v.plate}) endet am heutigen Tag.`,
+                    icon: 'https://unpkg.com/lucide-static@latest/icons/car.png'
+                });
+            }
+            if (v.tuev === todayStr) {
+                new Notification("🚨 TÜV fällig heute!", {
+                    body: `Die Hauptuntersuchung für ${v.model} (${v.plate}) ist heute fällig.`,
+                    icon: 'https://unpkg.com/lucide-static@latest/icons/shield-alert.png'
+                });
+            }
+        });
+
+        appData.workshop.forEach(w => {
+            if (w.date === todayStr && w.status !== 'Abgeschlossen') {
+                const v = appData.vehicles.find(item => item.id === w.vehicleId);
+                new Notification("🔧 Werkstatt-Termin heute!", {
+                    body: `Fahrzeug: ${v ? v.model : 'Unbekannt'} | Grund: ${w.reason}`,
+                    icon: 'https://unpkg.com/lucide-static@latest/icons/wrench.png'
+                });
+            }
+        });
+    }
+
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'slideIn 0.3s ease-out reverse';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
     function updateClock() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
@@ -856,21 +1039,16 @@
     setInterval(updateClock, 1000);
     updateClock(); 
 
-    // STANDARDDATUMS-LOGIK
     function setTodayAsDefault() {
         const todayStr = new Date().toISOString().split('T')[0];
-        document.getElementById('wsDate').value = todayStr;
-        document.getElementById('todoDate').value = todayStr;
-        document.getElementById('vPurchase').value = todayStr;
-        document.getElementById('vLeaseReturn').value = todayStr;
+        if(document.getElementById('wsDate')) document.getElementById('wsDate').value = todayStr;
+        if(document.getElementById('todoDate')) document.getElementById('todoDate').value = todayStr;
+        if(document.getElementById('vPurchase')) document.getElementById('vPurchase').value = todayStr;
+        if(document.getElementById('vLeaseReturn')) document.getElementById('vLeaseReturn').value = todayStr;
+        if(document.getElementById('vTuev')) document.getElementById('vTuev').value = todayStr;
         if (document.getElementById('calTodoDate')) {
             document.getElementById('calTodoDate').value = todayStr;
         }
-    }
-
-    function saveData() {
-        localStorage.setItem('fitForDriveData', JSON.stringify(appData));
-        renderAll();
     }
 
     function formatDate(dateStr) {
@@ -896,24 +1074,35 @@
         closeSearch();
     }
 
-    // FUHRPARK MECHANIK
     function saveVehicle(e) {
         e.preventDefault();
         const id = document.getElementById('vehicleId').value;
         const type = document.getElementById('vType').value;
         const model = document.getElementById('vModel').value;
-        const plate = document.getElementById('vPlate').value.toUpperCase();
+        const plate = document.getElementById('vPlate').value.toUpperCase().trim();
+        const driver = document.getElementById('vDriver').value || 'Nicht zugewiesen';
+        const mileage = parseInt(document.getElementById('vMileage').value) || 0;
+        const tuev = document.getElementById('vTuev').value;
         const purchase = document.getElementById('vPurchase').value;
         const leaseReturn = document.getElementById('vLeaseReturn').value;
+
+        const plateRegex = /^[A-ZÖÄÜ]{1,3}-[A-ZÖÄÜ]{1,2}\s[1-9][0-9]{0,3}$/;
+        if (!plateRegex.test(plate)) {
+            alert("⚠️ Ungültiges Kennzeichen-Format!\nBeispiel: KL-FD 123 oder M-A 1234");
+            document.getElementById('vPlate').focus();
+            return;
+        }
 
         if (id) {
             const index = appData.vehicles.findIndex(v => v.id === id);
             if (index !== -1) {
-                appData.vehicles[index] = { id, type, model, plate, purchase, leaseReturn };
+                appData.vehicles[index] = { id, type, model, plate, driver, mileage, tuev, purchase, leaseReturn };
             }
+            showToast("Fahrzeug erfolgreich aktualisiert!");
         } else {
             const newId = 'v_' + Date.now();
-            appData.vehicles.push({ id: newId, type, model, plate, purchase, leaseReturn });
+            appData.vehicles.push({ id: newId, type, model, plate, driver, mileage, tuev, purchase, leaseReturn });
+            showToast("Neues Fahrzeug erfolgreich angelegt!");
         }
         
         saveData();
@@ -928,16 +1117,21 @@
         document.getElementById('vType').value = v.type;
         document.getElementById('vModel').value = v.model;
         document.getElementById('vPlate').value = v.plate;
+        document.getElementById('vDriver').value = v.driver === 'Nicht zugewiesen' ? '' : v.driver;
+        document.getElementById('vMileage').value = v.mileage || 0;
+        document.getElementById('vTuev').value = v.tuev || '';
         document.getElementById('vPurchase').value = v.purchase;
         document.getElementById('vLeaseReturn').value = v.leaseReturn;
 
-        document.getElementById('vehicleFormTitle').innerText = '✏️ Fahrzeug ändern';
+        document.getElementById('vehicleFormTitle').innerHTML = '<i data-lucide="edit-3"></i> Fahrzeug ändern';
         document.getElementById('vSubmitBtn').innerText = 'Änderung speichern';
+        lucide.createIcons();
     }
 
     function deleteVehicle(id) {
         if (confirm('Möchten Sie dieses Fahrzeug wirklich löschen?')) {
             appData.vehicles = appData.vehicles.filter(v => v.id !== id);
+            showToast("Fahrzeug gelöscht.");
             saveData();
         }
     }
@@ -945,12 +1139,12 @@
     function resetVehicleForm() {
         document.getElementById('vehicleId').value = '';
         document.getElementById('vehicleForm').reset();
-        document.getElementById('vehicleFormTitle').innerText = '🆕 Fahrzeug anlegen';
+        document.getElementById('vehicleFormTitle').innerHTML = '<i data-lucide="plus-circle"></i> Fahrzeug anlegen';
         document.getElementById('vSubmitBtn').innerText = 'Speichern';
         setTodayAsDefault();
+        lucide.createIcons();
     }
 
-    // WERKSTATT MECHANIK
     function saveWorkshop(e) {
         e.preventDefault();
         const id = document.getElementById('wsId').value;
@@ -964,9 +1158,11 @@
             if (index !== -1) {
                 appData.workshop[index] = { id, vehicleId, date, reason, status };
             }
+            showToast("Werkstatteintrag aktualisiert.");
         } else {
             const newId = 'w_' + Date.now();
             appData.workshop.push({ id: newId, vehicleId, date, reason, status });
+            showToast("Werkstatt-Termin gebucht.");
         }
 
         saveData();
@@ -983,13 +1179,15 @@
         document.getElementById('wsReason').value = w.reason;
         document.getElementById('wsStatus').value = w.status;
 
-        document.getElementById('workshopFormTitle').innerText = '✏️ Werkstatteintrag ändern';
+        document.getElementById('workshopFormTitle').innerHTML = '<i data-lucide="edit-3"></i> Werkstatteintrag ändern';
         document.getElementById('wsSubmitBtn').innerText = 'Änderung speichern';
+        lucide.createIcons();
     }
 
     function deleteWorkshop(id) {
         if (confirm('Möchten Sie diesen Werkstatteintrag wirklich löschen?')) {
             appData.workshop = appData.workshop.filter(w => w.id !== id);
+            showToast("Werkstatteintrag entfernt.");
             saveData();
         }
     }
@@ -997,12 +1195,12 @@
     function resetWorkshopForm() {
         document.getElementById('wsId').value = '';
         document.getElementById('workshopForm').reset();
-        document.getElementById('workshopFormTitle').innerText = '🛠️ Werkstatt-Termin buchen';
+        document.getElementById('workshopFormTitle').innerHTML = '<i data-lucide="wrench"></i> Werkstatt-Termin buchen';
         document.getElementById('wsSubmitBtn').innerText = 'Termin eintragen';
         setTodayAsDefault();
+        lucide.createIcons();
     }
 
-    // TO-DO MECHANIK
     function saveTodo(e) {
         e.preventDefault();
         const id = document.getElementById('todoId').value;
@@ -1015,9 +1213,11 @@
                 appData.todos[index].task = task;
                 appData.todos[index].date = date;
             }
+            showToast("Aufgabe geändert.");
         } else {
             const newId = 't_' + Date.now();
             appData.todos.push({ id: newId, task, date, completed: false });
+            showToast("Aufgabe hinzugefügt.");
         }
 
         saveData();
@@ -1028,6 +1228,7 @@
         const index = appData.todos.findIndex(t => t.id === id);
         if (index !== -1) {
             appData.todos[index].completed = !appData.todos[index].completed;
+            showToast(appData.todos[index].completed ? "Aufgabe erledigt! 🎉" : "Aufgabe wieder offen.");
             saveData();
         }
     }
@@ -1044,16 +1245,18 @@
         document.getElementById('calTodoTask').value = t.task;
         document.getElementById('calTodoDate').value = t.date;
 
-        document.getElementById('todoFormTitle').innerText = '✏️ Aufgabe ändern';
+        document.getElementById('todoFormTitle').innerHTML = '<i data-lucide="edit-3"></i> Aufgabe ändern';
         document.getElementById('todoSubmitBtn').innerText = 'Änderung speichern';
         
-        document.getElementById('calTodoFormTitle').innerText = '✏️ Kalendereintrag bearbeiten';
+        document.getElementById('calTodoFormTitle').innerHTML = '<i data-lucide="edit-3"></i> Kalendereintrag bearbeiten';
         document.getElementById('calTodoSubmitBtn').innerText = 'Änderung speichern';
+        lucide.createIcons();
     }
 
     function deleteTodo(id) {
         if (confirm('Eintrag dauerhaft löschen?')) {
             appData.todos = appData.todos.filter(t => t.id !== id);
+            showToast("Aufgabe gelöscht.");
             saveData();
         }
     }
@@ -1061,25 +1264,23 @@
     function resetTodoForm() {
         document.getElementById('todoId').value = '';
         document.getElementById('todoForm').reset();
-        document.getElementById('todoFormTitle').innerText = '📌 Neue Aufgabe';
+        document.getElementById('todoFormTitle').innerHTML = '<i data-lucide="check-square"></i> Neue Aufgabe';
         document.getElementById('todoSubmitBtn').innerText = 'Hinzufügen';
         setTodayAsDefault();
+        lucide.createIcons();
     }
 
-
-    // INTERACTIVE OUTLOOK POPUP WINDOW MECHANICS
     function openCalendarModal(dateString, todoId = '') {
         resetCalTodoForm();
-        
         if (todoId) {
             editTodo(todoId);
         } else {
             document.getElementById('calTodoDate').value = dateString;
-            document.getElementById('calTodoFormTitle').innerText = `📌 Eintrag für ${formatDate(dateString)}`;
+            document.getElementById('calTodoFormTitle').innerHTML = `<i data-lucide="pin"></i> Eintrag für ${formatDate(dateString)}`;
         }
-
         document.getElementById('calendarModal').classList.add('active');
         document.getElementById('calTodoTask').focus();
+        lucide.createIcons();
     }
 
     function closeCalendarModal() {
@@ -1104,9 +1305,11 @@
                 appData.todos[index].task = task;
                 appData.todos[index].date = date;
             }
+            showToast("Kalendereintrag geändert.");
         } else {
             const newId = 't_' + Date.now();
             appData.todos.push({ id: newId, task, date, completed: false });
+            showToast("Kalendereintrag gespeichert.");
         }
 
         saveData();
@@ -1116,9 +1319,10 @@
     function resetCalTodoForm() {
         document.getElementById('calTodoId').value = '';
         document.getElementById('calTodoForm').reset();
-        document.getElementById('calTodoFormTitle').innerText = '📌 Neuer Kalendereintrag';
+        document.getElementById('calTodoFormTitle').innerHTML = '<i data-lucide="pin"></i> Neuer Kalendereintrag';
         document.getElementById('calTodoSubmitBtn').innerText = 'Speichern';
         setTodayAsDefault();
+        lucide.createIcons();
     }
 
     function renderOutlookCalendar() {
@@ -1147,28 +1351,26 @@
 
         let allEvents = [];
         appData.vehicles.forEach(v => {
+            let iconName = v.type === 'Motorrad' ? 'bike' : (v.type === 'Anhänger' ? 'package' : 'car');
             if (v.leaseReturn) {
-                // Das spezifische Symbol je nach Fahrzeugtyp bestimmen
-                let symbol = '🚗';
-                if (v.type === 'Motorrad') symbol = '🏍️';
-                if (v.type === 'Anhänger') symbol = '📦';
-                
-                allEvents.push({ id: v.id, date: v.leaseReturn, title: `Leasing-Rückgabe: ${v.model} (${v.plate})`, type: 'leasing', category: 'vehicle', icon: symbol });
+                allEvents.push({ id: v.id, date: v.leaseReturn, title: `Leasing-Ende: ${v.model} (${v.plate})`, type: 'leasing', category: 'vehicle', icon: iconName });
+            }
+            if (v.tuev) {
+                allEvents.push({ id: v.id, date: v.tuev, title: `TÜV fällig: ${v.model} (${v.plate})`, type: 'repair', category: 'vehicle', icon: 'shield-alert' });
             }
         });
         appData.workshop.forEach(w => {
             if (w.date && w.status !== 'Abgeschlossen') {
                 const v = appData.vehicles.find(item => item.id === w.vehicleId);
-                allEvents.push({ id: w.id, date: w.date, title: `Werkstatt (${w.status}): ${v ? v.model : 'Fahrzeug'} - ${w.reason}`, type: 'repair', category: 'workshop', icon: '🔧' });
+                allEvents.push({ id: w.id, date: w.date, title: `Werkstatt (${w.status}): ${v ? v.model : 'Fahrzeug'} - ${w.reason}`, type: 'repair', category: 'workshop', icon: 'wrench' });
             }
         });
         appData.todos.forEach(t => {
             if (t.date) {
-                allEvents.push({ id: t.id, date: t.date, title: t.task, type: 'todo', category: 'todo', completed: t.completed, icon: '🖊️' });
+                allEvents.push({ id: t.id, date: t.date, title: t.task, type: 'todo', category: 'todo', completed: t.completed, icon: 'check-circle' });
             }
         });
 
-        // 1. Tage des Vormonats
         for (let i = startOffset; i > 0; i--) {
             const dayNum = prevMonthTotalDays - i + 1;
             const dummyDiv = document.createElement('div');
@@ -1177,7 +1379,6 @@
             gridContainer.appendChild(dummyDiv);
         }
 
-        // 2. Eigentliche Monatstage
         const todayStr = new Date().toISOString().split('T')[0];
 
         for (let day = 1; day <= totalDays; day++) {
@@ -1193,7 +1394,7 @@
             const dayEvents = allEvents.filter(e => e.date === dateStr);
             
             dayEvents.forEach(e => {
-                dotsHtml += `<span class="calendar-icon-indicator" title="${e.title}">${e.icon}</span>`;
+                dotsHtml += `<span class="calendar-icon-indicator" title="${e.title}"><i data-lucide="${e.icon}"></i></span>`;
             });
             dotsHtml += '</div>';
 
@@ -1201,7 +1402,6 @@
             gridContainer.appendChild(dayDiv);
         }
 
-        // 3. Nachfolgende Tage des nächsten Monats
         const totalRenderedCells = startOffset + totalDays;
         const remainingCells = 42 - totalRenderedCells;
         for (let i = 1; i <= remainingCells; i++) {
@@ -1211,7 +1411,6 @@
             gridContainer.appendChild(dummyDiv);
         }
 
-        // 4. Chronologische Liste für den laufenden Monat unten generieren
         const monthlyEventsFromRaw = allEvents.filter(e => {
             const eDate = new Date(e.date);
             return eDate.getFullYear() === year && eDate.getMonth() === month;
@@ -1225,40 +1424,40 @@
         }
 
         if (finalMonthList.length === 0) {
-            listContainer.innerHTML = '<p style="font-style:italic; padding:10px; color: var(--text-light);">Keine Termine oder Aufgaben für diesen Monat vorhanden bzw. gefunden.</p>';
+            listContainer.innerHTML = '<p style="font-style:italic; padding:10px; color: var(--text-light);">Keine Termine für diesen Monat.</p>';
             return;
         }
 
         finalMonthList.forEach(e => {
             let typeLabel = '📅 TERMIN';
             if (e.type === 'leasing') typeLabel = '⚠️ LEASING';
-            if (e.type === 'repair') typeLabel = '🔧 WERKSTATT';
+            if (e.type === 'repair') typeLabel = e.title.includes('TÜV') ? '🚨 TÜV-FRIST' : '🔧 WERKSTATT';
             if (e.type === 'todo') typeLabel = e.completed ? '✅ ERLEDIGT' : '📌 TO-DO';
 
             let actionButtons = '';
             if (e.category === 'todo') {
                 actionButtons = `
                     <div style="float:right;">
-                        <button class="action-btn edit" onclick="event.stopPropagation(); openCalendarModal('${e.date}', '${e.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="event.stopPropagation(); deleteTodo('${e.id}')">❌</button>
+                        <button class="btn btn-outline btn-action" style="color:var(--primary)" onclick="event.stopPropagation(); openCalendarModal('${e.date}', '${e.id}')">Bearbeiten</button>
+                        <button class="btn btn-danger btn-action" onclick="event.stopPropagation(); deleteTodo('${e.id}')">Löschen</button>
                     </div>`;
             } else if (e.category === 'vehicle') {
-                actionButtons = `<button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="event.stopPropagation(); switchView('fuhrpark'); editVehicle('${e.id}')">Bearbeiten</button>`;
+                actionButtons = `<button class="btn btn-outline btn-action" style="float:right;" onclick="event.stopPropagation(); switchView('fuhrpark'); editVehicle('${e.id}')">Anzeigen</button>`;
             } else if (e.category === 'workshop') {
-                actionButtons = `<button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="event.stopPropagation(); switchView('werkstatt'); editWorkshop('${e.id}')">Bearbeiten</button>`;
+                actionButtons = `<button class="btn btn-outline btn-action" style="float:right;" onclick="event.stopPropagation(); switchView('werkstatt'); editWorkshop('${e.id}')">Anzeigen</button>`;
             }
 
             listContainer.innerHTML += `
                 <div class="calendar-item ${e.type}" onclick="event.stopPropagation(); if('${e.category}' === 'todo') openCalendarModal('${e.date}', '${e.id}')">
                     ${actionButtons}
                     <strong>${formatDate(e.date)}</strong> - <small>${typeLabel}</small><br>
-                    <span>${e.icon} ${e.title}</span>
+                    <span style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="${e.icon}" style="width:14px; height:14px;"></i> ${e.title}</span>
                     <div style="clear:both;"></div>
                 </div>`;
         });
+        lucide.createIcons();
     }
 
-    // GLOBALE LIVE-SUCHE
     function handleGlobalSearch() {
         const query = document.getElementById('globalSearch').value.toLowerCase().trim();
         const resultsSection = document.getElementById('searchResultsSection');
@@ -1275,13 +1474,12 @@
         let matchCount = 0;
 
         appData.vehicles.forEach(v => {
-            if (v.model.toLowerCase().includes(query) || v.plate.toLowerCase().includes(query) || v.type.toLowerCase().includes(query)) {
+            if (v.model.toLowerCase().includes(query) || v.plate.toLowerCase().includes(query) || v.type.toLowerCase().includes(query) || (v.driver && v.driver.toLowerCase().includes(query))) {
                 matchCount++;
                 container.innerHTML += `
                     <div class="search-highlight">
-                        <strong>🚗 Fuhrpark:</strong> ${v.type} - ${v.model} (${v.plate}) | 
-                        Leasing-Ende: ${formatDate(v.leaseReturn)}
-                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="switchView('fuhrpark'); editVehicle('${v.id}')">Bearbeiten</button>
+                        <strong>🚗 Fuhrpark:</strong> ${v.type} - ${v.model} (${v.plate}) | Fahrer: ${v.driver} | KM: ${v.mileage}
+                        <button class="btn btn-outline btn-action" style="float:right;" onclick="switchView('fuhrpark'); editVehicle('${v.id}')">Bearbeiten</button>
                         <div style="clear:both"></div>
                     </div>`;
             }
@@ -1295,7 +1493,7 @@
                 container.innerHTML += `
                     <div class="search-highlight" style="border-color: var(--danger)">
                         <strong>🔧 Werkstatt:</strong> ${vName} | Grund: ${w.reason} | Status: <em>${w.status}</em>
-                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="switchView('werkstatt'); editWorkshop('${w.id}')">Bearbeiten</button>
+                        <button class="btn btn-outline btn-action" style="float:right;" onclick="switchView('werkstatt'); editWorkshop('${w.id}')">Bearbeiten</button>
                         <div style="clear:both"></div>
                     </div>`;
             }
@@ -1307,7 +1505,7 @@
                 container.innerHTML += `
                     <div class="search-highlight" style="border-color: var(--accent)">
                         <strong>✅ To-Do:</strong> ${t.task} ${t.date ? '| Fällig: ' + formatDate(t.date) : ''}
-                        <button class="btn btn-outline" style="padding:2px 6px; float:right; font-size:11px;" onclick="switchView('todolist'); editTodo('${t.id}')">Bearbeiten</button>
+                        <button class="btn btn-outline btn-action" style="float:right;" onclick="switchView('todolist'); editTodo('${t.id}')">Bearbeiten</button>
                         <div style="clear:both"></div>
                     </div>`;
             }
@@ -1323,7 +1521,6 @@
         document.getElementById('searchResultsSection').style.display = 'none';
     }
 
-    // BACKUP MANAGEMENT
     function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
         const downloadAnchor = document.createElement('a');
@@ -1332,13 +1529,14 @@
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+        showToast("Backup erfolgreich exportiert! 💾");
     }
 
     function importData(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten im Browser unwiderruflich. Fortfahren?")) {
+        if (!confirm("Achtung: Das Importieren eines Backups überschreibt alle aktuellen Daten in Firebase unwiderruflich. Fortfahren?")) {
             event.target.value = '';
             return;
         }
@@ -1350,7 +1548,7 @@
                 if (imported.vehicles && imported.workshop && imported.todos) {
                     appData = imported;
                     saveData();
-                    alert("Backup erfolgreich geladen!");
+                    showToast("Backup erfolgreich geladen! 📂");
                 } else {
                     alert("Ungültiges Dateiformat.");
                 }
@@ -1361,7 +1559,6 @@
         reader.readAsText(file);
     }
 
-    // GENERAL RENDER RUNNER
     function renderAll() {
         renderStats();
         renderVehicleTable();
@@ -1370,22 +1567,32 @@
         renderChronologicalCalendar();
         populateVehicleDropdowns();
         renderOutlookCalendar();
+        lucide.createIcons();
     }
 
     function renderStats() {
         document.getElementById('stat-total-vehicles').innerText = appData.vehicles.length;
         document.getElementById('stat-in-workshop').innerText = appData.workshop.filter(w => w.status === 'In Werkstatt').length;
 
-        let alertCount = 0;
+        let leaseCount = 0;
+        let tuevCount = 0;
         const today = new Date();
+
         appData.vehicles.forEach(v => {
             if (v.leaseReturn) {
                 const returnDate = new Date(v.leaseReturn);
                 const diffDays = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
-                if (diffDays <= 90) alertCount++;
+                if (diffDays >= 0 && diffDays <= 90) leaseCount++;
+            }
+            if (v.tuev) {
+                const tuevDate = new Date(v.tuev);
+                const diffDays = Math.ceil((tuevDate - today) / (1000 * 60 * 60 * 24));
+                if (diffDays >= 0 && diffDays <= 30) tuevCount++;
             }
         });
-        document.getElementById('stat-leasing-alert').innerText = alertCount;
+
+        document.getElementById('stat-leasing-alert').innerText = leaseCount;
+        document.getElementById('stat-tuev-alert').innerText = tuevCount;
     }
 
     function renderVehicleTable() {
@@ -1393,25 +1600,26 @@
         tbody.innerHTML = '';
         
         if (appData.vehicles.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Keine Fahrzeuge vorhanden.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Keine Fahrzeuge vorhanden.</td></tr>';
             return;
         }
 
         appData.vehicles.forEach(v => {
-            let badgeClass = 'badge-car';
-            if (v.type === 'Motorrad') badgeClass = 'badge-bike';
-            if (v.type === 'Anhänger') badgeClass = 'badge-trailer';
+            let badgeClass = v.type === 'Motorrad' ? 'badge-bike' : (v.type === 'Anhänger' ? 'badge-trailer' : 'badge-car');
+            let iconName = v.type === 'Motorrad' ? 'bike' : (v.type === 'Anhänger' ? 'package' : 'car');
+            const formattedDriver = v.driver ? `<br><small style="color:var(--text-light); display:inline-flex; align-items:center; gap:3px;"><i data-lucide="user" style="width:12px; height:12px;"></i> ${v.driver}</small>` : '';
 
             tbody.innerHTML += `
                 <tr>
-                    <td><span class="badge ${badgeClass}">${v.type}</span></td>
-                    <td style="font-weight:600">${v.model}</td>
+                    <td><span class="badge ${badgeClass}"><i data-lucide="${iconName}"></i> ${v.type}</span></td>
+                    <td><span style="font-weight:600">${v.model}</span>${formattedDriver}</td>
                     <td><code>${v.plate}</code></td>
-                    <td>${formatDate(v.purchase)}</td>
+                    <td>${Number(v.mileage || 0).toLocaleString('de-DE')} km</td>
+                    <td>${formatDate(v.tuev)}</td>
                     <td>${formatDate(v.leaseReturn)}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editVehicle('${v.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="deleteVehicle('${v.id}')">❌</button>
+                        <button class="btn btn-outline btn-action" style="color:var(--primary)" onclick="editVehicle('${v.id}')">Bearbeiten</button>
+                        <button class="btn btn-danger btn-action" onclick="deleteVehicle('${v.id}')">Löschen</button>
                     </td>
                 </tr>`;
         });
@@ -1439,9 +1647,9 @@
             const v = appData.vehicles.find(item => item.id === w.vehicleId);
             const vehicleName = v ? `${v.model} (${v.plate})` : 'Gelöscht';
             
-            let statusBadge = '<span class="badge badge-active">⏳ Geplant</span>';
-            if (w.status === 'In Werkstatt') statusBadge = '<span class="badge badge-workshop">🔧 In Werkstatt</span>';
-            if (w.status === 'Abgeschlossen') statusBadge = '<span class="badge badge-car">✅ Erledigt</span>';
+            let statusBadge = '<span class="badge badge-active"><i data-lucide="clock"></i> Geplant</span>';
+            if (w.status === 'In Werkstatt') statusBadge = '<span class="badge badge-workshop"><i data-lucide="wrench"></i> In Werkstatt</span>';
+            if (w.status === 'Abgeschlossen') statusBadge = '<span class="badge badge-car"><i data-lucide="check"></i> Erledigt</span>';
 
             tbody.innerHTML += `
                 <tr>
@@ -1450,8 +1658,8 @@
                     <td style="font-size:13px;">${w.reason}</td>
                     <td>${statusBadge}</td>
                     <td>
-                        <button class="action-btn edit" onclick="editWorkshop('${w.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="deleteWorkshop('${w.id}')">❌</button>
+                        <button class="btn btn-outline btn-action" style="color:var(--primary)" onclick="editWorkshop('${w.id}')">Bearbeiten</button>
+                        <button class="btn btn-danger btn-action" onclick="deleteWorkshop('${w.id}')">Löschen</button>
                     </td>
                 </tr>`;
         });
@@ -1472,20 +1680,20 @@
         }
 
         appData.todos.forEach(t => {
-            const dateBadge = t.date ? `<span class="todo-date">📅 Bis ${formatDate(t.date)}</span>` : '';
+            const dateBadge = t.date ? `<span class="todo-date"><i data-lucide="calendar"></i> Bis ${formatDate(t.date)}</span>` : '';
             const isCompletedClass = t.completed ? 'todo-completed' : '';
             const isChecked = t.completed ? 'checked' : '';
 
             container.innerHTML += `
                 <div class="todo-item ${isCompletedClass}">
-                    <div style="float:left;">
+                    <div style="float:left; display:flex; align-items:center;">
                         <input type="checkbox" class="todo-checkbox" ${isChecked} onclick="toggleTodo('${t.id}')">
                         <span class="todo-text">${t.task}</span>
                         ${dateBadge}
                     </div>
                     <div style="float:right;">
-                        <button class="action-btn edit" onclick="editTodo('${t.id}')">✏️</button>
-                        <button class="action-btn delete" onclick="deleteTodo('${t.id}')">❌</button>
+                        <button class="btn btn-outline btn-action" style="color:var(--primary)" onclick="editTodo('${t.id}')">Bearbeiten</button>
+                        <button class="btn btn-danger btn-action" onclick="deleteTodo('${t.id}')">Löschen</button>
                     </div>
                     <div style="clear:both;"></div>
                 </div>`;
@@ -1495,13 +1703,13 @@
                     <div class="todo-item">
                         <input type="checkbox" class="todo-checkbox" onclick="toggleTodo('${t.id}')">
                         <span class="todo-text" style="font-weight:600;">${t.task}</span>
-                        ${t.date ? '<br><small style="color:var(--warning); margin-left:25px;">📅 Fällig: ' + formatDate(t.date) + '</small>' : ''}
+                        ${t.date ? '<br><small style="color:var(--warning); margin-left:25px; display:inline-flex; align-items:center; gap:3px;"><i data-lucide="calendar" style="width:12px; height:12px;"></i> Fällig: ' + formatDate(t.date) + '</small>' : ''}
                     </div>`;
             }
         });
 
         if (dashContainer.innerHTML === '') {
-            dashContainer.innerHTML = '<p style="color:var(--success); font-weight:600;">🎉 Alles erledigt!</p>';
+            dashContainer.innerHTML = '<p style="color:var(--success); font-weight:600; display:flex; align-items:center; gap:5px;"><i data-lucide="party-popper"></i> Alles erledigt!</p>';
         }
     }
 
@@ -1513,20 +1721,23 @@
 
         appData.vehicles.forEach(v => {
             if (v.leaseReturn) {
-                events.push({ date: new Date(v.leaseReturn), title: `Leasing-Rückgabe: ${v.model} (${v.plate})`, type: 'leasing' });
+                events.push({ date: new Date(v.leaseReturn), title: `Leasing-Rückgabe: ${v.model} (${v.plate})`, type: 'leasing', icon: 'alert-triangle' });
+            }
+            if (v.tuev) {
+                events.push({ date: new Date(v.tuev), title: `TÜV fällig: ${v.model} (${v.plate})`, type: 'repair', icon: 'shield-alert' });
             }
         });
 
         appData.workshop.forEach(w => {
             if (w.date && w.status !== 'Abgeschlossen') {
                 const v = appData.vehicles.find(item => item.id === w.vehicleId);
-                events.push({ date: new Date(w.date), title: `Werkstatt (${w.status}): ${v ? v.model : 'Fahrzeug'} - ${w.reason}`, type: 'repair' });
+                events.push({ date: new Date(w.date), title: `Werkstatt (${w.status}): ${v ? v.model : 'Fahrzeug'} - ${w.reason}`, type: 'repair', icon: 'wrench' });
             }
         });
 
         appData.todos.forEach(t => {
             if (t.date && !t.completed) {
-                events.push({ date: new Date(t.date), title: `Fällig: ${t.task}`, type: 'todo' });
+                events.push({ date: new Date(t.date), title: `Fällig: ${t.task}`, type: 'todo', icon: 'check-square' });
             }
         });
 
@@ -1540,20 +1751,22 @@
         events.forEach(e => {
             let typeLabel = '📅 TERMIN';
             if (e.type === 'leasing') typeLabel = '⚠️ LEASING';
-            if (e.type === 'repair') typeLabel = '🔧 WERKSTATT';
+            if (e.type === 'repair') typeLabel = e.title.includes('TÜV') ? '🚨 TÜV-FRIST' : '🔧 WERKSTATT';
             
             calContainer.innerHTML += `
                 <div class="calendar-item ${e.type}">
                     <strong>${formatDate(e.date.toISOString().split('T')[0])}</strong> - <small>${typeLabel}</small><br>
-                    <span>${e.title}</span>
+                    <span style="display:inline-flex; align-items:center; gap:4px;"><i data-lucide="${e.icon}" style="width:14px; height:14px;"></i> ${e.title}</span>
                 </div>`;
         });
     }
 
-    // INIT
+    // ANWENDUNGSSTART
     document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     setTodayAsDefault();
-    renderAll();
+    initNotifications();  
+    initAppDatabase(); // Startet Firebase Live-Synchronisation
+    setTimeout(checkTodayDeadlines, 3000); 
 </script>
 
 </body>
